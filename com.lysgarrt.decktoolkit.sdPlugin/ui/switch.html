@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="pi.css">
+<script src="pi.js"></script>
+</head>
+<body>
+  <div class="row">
+    <label for="monitor" data-i18n="monitor">Monitor</label>
+    <select id="monitor"><option value="" data-i18n="loading">Loading monitors…</option></select>
+    <button id="refresh" title="Search monitors again" data-i18n-title="refresh">↻</button>
+  </div>
+  <div class="row">
+    <label for="mode" data-i18n="mode">Mode</label>
+    <select id="mode">
+      <option value="single" data-i18n="single">One input</option>
+      <option value="toggle" data-i18n="toggle">Toggle between two</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="input" data-i18n="input">Input</label>
+    <select id="input" class="inputs"></select>
+  </div>
+  <div class="row hidden" id="customRow">
+    <label for="customValue" data-i18n="value">Value (decimal)</label>
+    <input id="customValue" type="number" min="0" max="65535">
+  </div>
+  <div id="second" class="hidden">
+    <div class="row">
+      <label for="input2" data-i18n="input2">Input 2</label>
+      <select id="input2" class="inputs"></select>
+    </div>
+    <div class="row hidden" id="customRow2">
+      <label for="customValue2" data-i18n="value2">Value 2</label>
+      <input id="customValue2" type="number" min="0" max="65535">
+    </div>
+    <div class="hint" data-i18n="toggleHint">Each press switches to the other input. The key shows the current one.</div>
+  </div>
+  <div class="row">
+    <label for="retries" data-i18n="retries">Retries</label>
+    <input id="retries" type="number" min="1" max="20" value="5">
+  </div>
+  <div class="hint" data-i18n="okHint">Uses DDC/CI – it must be enabled in the monitor's menu. Green check = monitor accepted the command, warning = no answer. Input codes differ by brand; use “Custom value” if needed.</div>
+<script>
+  window.STRINGS = { de: {
+    monitor: "Monitor", loading: "Lade Monitore…", refresh: "Monitore neu suchen", none: "Keine Monitore gefunden",
+    mode: "Modus", single: "Ein Eingang", toggle: "Zwischen zwei umschalten",
+    input: "Eingang", input2: "Eingang 2", value: "Wert (dezimal)", value2: "Wert 2", custom: "Eigener Wert…",
+    retries: "Versuche",
+    toggleHint: "Jeder Druck wechselt zum jeweils anderen Eingang. Die Taste zeigt den aktuellen Eingang.",
+    okHint: "Nutzt DDC/CI – muss im Monitor-Menü eingeschaltet sein. Grüner Haken = Monitor hat den Befehl angenommen, Warnzeichen = keine Antwort. Eingangs-Codes unterscheiden sich je nach Hersteller; notfalls „Eigener Wert“ nutzen.",
+    main: "Hauptmonitor", left: "links", right: "rechts", top: "oben", bottom: "unten", middle: "Mitte", missing: "nicht angeschlossen",
+  } };
+  const $ = (id) => document.getElementById(id);
+  const INPUTS = [["15", "DisplayPort 1 (15)"], ["16", "DisplayPort 2 (16)"], ["17", "HDMI 1 (17)"], ["18", "HDMI 2 (18)"], ["27", "USB-C (27)"]];
+
+  function buildOptions() {
+    for (const sel of document.querySelectorAll(".inputs")) {
+      sel.innerHTML = "";
+      for (const [v, t] of INPUTS) sel.add(new Option(t, v));
+      sel.add(new Option(PI.t("custom", "Custom value…"), "custom"));
+    }
+  }
+
+  function save() {
+    const s = PI.settings;
+    const sel = $("monitor").selectedOptions[0];
+    if (sel && sel.value) {
+      const m = JSON.parse(sel.value);
+      s.device = m.device;
+      s.index = m.index;
+      s.name = m.name;
+      s.monitorId = m.id || "";
+      s.monitorLabel = m.label || m.name;
+    }
+    s.input = $("input").value;
+    s.customValue = $("customValue").value;
+    s.retries = Number($("retries").value) || 5;
+    s.mode = $("mode").value;
+    s.input2 = $("input2").value;
+    s.customValue2 = $("customValue2").value;
+    toggleRows();
+    PI.save();
+  }
+
+  function fillMonitors(list) {
+    const s = PI.settings;
+    const el = $("monitor");
+    el.innerHTML = "";
+    if (!list || !list.length) {
+      el.add(new Option(PI.t("none", "No monitors found"), ""));
+      return;
+    }
+    // Position relative to the main monitor (0,0), so identical models can be told apart.
+    const main = list.find((x) => x.left === 0 && x.top === 0) || { width: 0, height: 0 };
+    const where = (m) => {
+      if (m.left === undefined) return "";
+      const cx = m.left + m.width / 2, cy = m.top + m.height / 2;
+      if (m.left === 0 && m.top === 0) return PI.t("main", "main monitor");
+      const h = cx < 0 ? PI.t("left", "left") : cx > main.width ? PI.t("right", "right") : "";
+      const v = cy < 0 ? PI.t("top", "top") : cy > main.height ? PI.t("bottom", "bottom") : "";
+      return [h, v].filter(Boolean).join(" ") || PI.t("middle", "middle");
+    };
+    const sameName = (m) => list.filter((x) => x.name === m.name).length > 1;
+    let found = false;
+    for (const m of list) {
+      const label = `${m.name || "Monitor"} — ${where(m)}${sameName(m) && m.id ? " (" + m.id.split("&").pop() + ")" : ""}`;
+      const o = new Option(label, JSON.stringify({ device: m.device, index: m.index, name: m.name, id: m.id, label }));
+      const match = s.monitorId ? m.id === s.monitorId : m.device === s.device && m.index === (s.index ?? 0);
+      if (match && !found) { o.selected = true; found = true; }
+      el.add(o);
+    }
+    if (!found && (s.monitorId || s.device)) {
+      const o = new Option(`${s.monitorLabel || s.name || "Monitor"} (${PI.t("missing", "not connected")})`,
+        JSON.stringify({ device: s.device, index: s.index ?? 0, name: s.name, id: s.monitorId, label: s.monitorLabel }));
+      o.selected = true;
+      el.prepend(o);
+    }
+    if (!s.device || (found && !s.monitorId)) save();
+  }
+
+  function apply(s) {
+    $("input").value = s.input ?? "17";
+    $("customValue").value = s.customValue ?? "";
+    $("retries").value = s.retries ?? 5;
+    $("mode").value = s.mode ?? "single";
+    $("input2").value = s.input2 ?? "15";
+    $("customValue2").value = s.customValue2 ?? "";
+    toggleRows();
+  }
+
+  function toggleRows() {
+    $("customRow").classList.toggle("hidden", $("input").value !== "custom");
+    $("second").classList.toggle("hidden", $("mode").value !== "toggle");
+    $("customRow2").classList.toggle("hidden", $("input2").value !== "custom");
+  }
+
+  buildOptions();
+  PI.connect({
+    onSettings(s) { buildOptions(); apply(s); },
+    onOpen() { PI.sendToPlugin({ event: "getMonitors" }); },
+    onMessage(p) { if (p.event === "monitors") fillMonitors(p.monitors); },
+  });
+  for (const id of ["monitor", "input", "customValue", "retries", "mode", "input2", "customValue2"]) $(id).addEventListener("change", save);
+  $("refresh").addEventListener("click", () => {
+    $("monitor").innerHTML = "";
+    $("monitor").add(new Option(PI.t("loading", "Loading monitors…"), ""));
+    PI.sendToPlugin({ event: "getMonitors" });
+  });
+</script>
+</body>
+</html>

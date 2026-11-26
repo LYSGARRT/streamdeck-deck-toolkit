@@ -1,0 +1,136 @@
+{
+ "Name": "Deck Toolkit",
+ "Version": "1.0.0.0",
+ "Author": "Lysgarrt",
+ "Actions": [
+  {
+   "Name": "Monitor Input",
+   "UUID": "com.lysgarrt.decktoolkit.switch",
+   "Icon": "imgs/actions/switch/icon",
+   "Tooltip": "Switches a monitor input (HDMI / DisplayPort / USB-C) via DDC/CI. Can also toggle between two inputs.",
+   "PropertyInspectorPath": "ui/switch.html",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/switch/key",
+     "TitleAlignment": "bottom"
+    },
+    {
+     "Image": "imgs/actions/switch/key",
+     "TitleAlignment": "bottom"
+    }
+   ]
+  },
+  {
+   "Name": "Battery",
+   "UUID": "com.lysgarrt.decktoolkit.headset",
+   "Icon": "imgs/actions/headset/icon",
+   "Tooltip": "Battery level of a Bluetooth headset, controller, mouse … (or a SteelSeries Arctis Nova Pro Wireless via USB).",
+   "PropertyInspectorPath": "ui/headset.html",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/headset/key",
+     "ShowTitle": false
+    }
+   ]
+  },
+  {
+   "Name": "Volume",
+   "UUID": "com.lysgarrt.decktoolkit.volume",
+   "Icon": "imgs/actions/volume/icon",
+   "Tooltip": "Volume down / up / mute for the default or any audio device. Two keys side by side form one slider.",
+   "PropertyInspectorPath": "ui/volume.html",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/volume/key",
+     "ShowTitle": false
+    }
+   ]
+  },
+  {
+   "Name": "Twitch Channel",
+   "UUID": "com.lysgarrt.decktoolkit.twitch",
+   "Icon": "imgs/actions/twitch/icon",
+   "Tooltip": "Shows whether a Twitch channel is live (grey = offline). Press opens the stream.",
+   "PropertyInspectorPath": "ui/twitch.html",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/twitch/key",
+     "ShowTitle": false
+    }
+   ]
+  },
+  {
+   "Name": "Safe Shutdown",
+   "UUID": "com.lysgarrt.decktoolkit.shutdown",
+   "Icon": "imgs/actions/shutdown/icon",
+   "Tooltip": "Shuts the PC down only after a second press within 3 seconds.",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/shutdown/key",
+     "ShowTitle": false
+    }
+   ]
+  },
+  {
+   "Name": "SwitchBot Bot",
+   "UUID": "com.lysgarrt.decktoolkit.bot",
+   "Icon": "imgs/actions/bot/icon",
+   "Tooltip": "Presses a SwitchBot Bot directly via the PC's Bluetooth (no hub needed).",
+   "PropertyInspectorPath": "ui/bot.html",
+   "Controllers": [
+    "Keypad"
+   ],
+   "States": [
+    {
+     "Image": "imgs/actions/bot/key",
+     "ShowTitle": false
+    }
+   ]
+  }
+ ],
+ "Category": "Deck Toolkit",
+ "CategoryIcon": "imgs/plugin/category-icon",
+ "CodePath": "bin/plugin.js",
+ "Description": "Two-key volume slider with mute, Twitch live status, monitor input switching (DDC/CI), battery level of Bluetooth devices, SwitchBot Bot via Bluetooth and a safe shutdown key.",
+ "Icon": "imgs/plugin/marketplace",
+ "SDKVersion": 3,
+ "Software": {
+  "MinimumVersion": "7.1"
+ },
+ "OS": [
+  {
+   "Platform": "windows",
+   "MinimumVersion": "10"
+  }
+ ],
+ "Nodejs": {
+  "Version": "24",
+  "Debug": "disabled"
+ },
+ "UUID": "com.lysgarrt.decktoolkit",
+ "Profiles": [
+  {
+   "Name": "profiles/Home",
+   "DeviceType": 0,
+   "Readonly": false,
+   "DontAutoSwitchWhenInstalled": true,
+   "AutoInstall": false
+  }
+ ],
+ "URL": "https://github.com/Lysgarrt/deck-toolkit"
+}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="pi.css">
+<script src="pi.js"></script>
+</head>
+<body>
+  <div class="row">
+    <label for="device" data-i18n="device">Device</label>
+    <select id="device"><option value="" data-i18n="loading">Searching devices…</option></select>
+    <button id="refresh" title="Search again" data-i18n-title="refresh">↻</button>
+  </div>
+  <div class="hint" data-i18n="deviceHint">Bluetooth headsets, controllers etc. appear here if Windows shows their battery level (Settings → Bluetooth &amp; devices). The device must be paired.</div>
+  <div class="row">
+    <label for="label" data-i18n="label">Label</label>
+    <input id="label" type="text" maxlength="12" placeholder="automatic (device name)" data-i18n-ph="labelPh">
+  </div>
+  <div class="row">
+    <label for="interval" data-i18n="refreshLbl">Refresh</label>
+    <select id="interval">
+      <option value="1" data-i18n="every1">every minute</option>
+      <option value="2" data-i18n="every2">every 2 minutes</option>
+      <option value="5" data-i18n="every5">every 5 minutes</option>
+    </select>
+  </div>
+  <div class="row" id="spareRow">
+    <label for="showSpare" data-i18n="spare">Spare battery</label>
+    <select id="showSpare">
+      <option value="true" data-i18n="show">show</option>
+      <option value="false" data-i18n="hide">hide</option>
+    </select>
+  </div>
+  <div class="hint" data-i18n="hint">Press the key to refresh now.</div>
+<script>
+  window.STRINGS = { de: {
+    device: "Gerät", loading: "Suche Geräte…", refresh: "Neu suchen", none: "Kein Gerät mit Akku gefunden",
+    deviceHint: "Bluetooth-Headsets, Controller usw. erscheinen hier, wenn Windows ihren Akkustand kennt (Einstellungen → Bluetooth &amp; Geräte). Das Gerät muss gekoppelt sein.",
+    refreshLbl: "Aktualisieren", every1: "jede Minute", every2: "alle 2 Minuten", every5: "alle 5 Minuten",
+    spare: "Ersatzakku", show: "anzeigen", hide: "ausblenden", hint: "Taste drücken = sofort aktualisieren.",
+    off: "nicht verbunden", missing: "(nicht gefunden)", choose: "– Gerät wählen –",
+    label: "Beschriftung", labelPh: "automatisch (Gerätename)",
+  } };
+  const $ = (id) => document.getElementById(id);
+  let devices = null;
+  function save() {
+    PI.settings.device = $("device").value;
+    PI.settings.label = $("label").value.trim();
+    PI.settings.interval = Number($("interval").value);
+    PI.settings.showSpare = $("showSpare").value === "true";
+    toggle();
+    PI.save();
+  }
+  function toggle() { $("spareRow").style.display = $("device").value === "arctis" ? "" : "none"; }
+  function fill() {
+    const sel = $("device");
+    const cur = PI.settings.device || "";
+    sel.innerHTML = "";
+    const list = devices || [];
+    if (!cur) sel.add(new Option(list.length ? PI.t("choose", "– choose device –") : PI.t("none", "No device with a battery found"), ""));
+    for (const d of list) {
+      const info = d.kind === "bt" ? (d.connected ? ` · ${d.level}%` : ` · ${PI.t("off", "not connected")}`) : " · USB";
+      sel.add(new Option(d.name + info, d.id));
+    }
+    if (cur && !list.some((d) => d.id === cur)) {
+      const name = cur === "arctis" ? "SteelSeries Arctis Nova Pro Wireless" : cur;
+      sel.add(new Option(name + " " + PI.t("missing", "(not found)"), cur), 0);
+    }
+    sel.value = cur;
+    toggle();
+  }
+  PI.connect({
+    onSettings(s) {
+      $("interval").value = String(s.interval ?? 1);
+      $("showSpare").value = String(s.showSpare !== false);
+      $("label").value = s.label || "";
+      if (devices) fill();
+    },
+    onOpen() { PI.sendToPlugin({ event: "getDevices" }); },
+    onMessage(p) { if (p.event === "devices") { devices = p.list || []; fill(); } },
+  });
+  for (const id of ["device", "label", "interval", "showSpare"]) $(id).addEventListener("change", save);
+  $("refresh").addEventListener("click", () => {
+    $("device").innerHTML = "";
+    $("device").add(new Option(PI.t("loading", "Searching devices…"), ""));
+    PI.sendToPlugin({ event: "getDevices" });
+  });
+</script>
+</body>
+</html>

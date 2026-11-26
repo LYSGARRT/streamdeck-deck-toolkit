@@ -1,0 +1,29 @@
+{
+  "name": "deck-toolkit",
+  "version": "1.0.0",
+  "description": "Stream Deck plugin for Windows: volume slider, Twitch live status, monitor input (DDC/CI), Bluetooth battery, SwitchBot, safe shutdown.",
+  "scripts": {
+    "build": "rollup -c",
+    "build:helpers": "powershell -ExecutionPolicy Bypass -File build-helpers.ps1",
+    "pack": "streamdeck pack com.lysgarrt.decktoolkit.sdPlugin --output dist --force",
+    "link": "streamdeck link com.lysgarrt.decktoolkit.sdPlugin"
+  },
+  "keywords": [],
+  "author": "Lysgarrt",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@elgato/streamdeck": "^3.0.6"
+  },
+  "devDependencies": {
+    "@elgato/cli": "^1.10.5",
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "rollup": "^4.68.8"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lysgarrt/deck-toolkit.git"
+  }
+}

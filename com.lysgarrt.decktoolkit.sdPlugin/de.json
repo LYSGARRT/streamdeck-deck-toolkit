@@ -1,0 +1,29 @@
+{
+ "Name": "Deck Toolkit",
+ "Description": "Lautstärke-Regler über zwei Tasten mit Stumm-Taste, Twitch-Live-Status, Monitor-Eingang umschalten (DDC/CI), Akkustand von Bluetooth-Geräten, SwitchBot Bot per Bluetooth und sicheres Herunterfahren.",
+ "Category": "Deck Toolkit",
+ "com.lysgarrt.decktoolkit.switch": {
+  "Name": "Monitor-Eingang",
+  "Tooltip": "Schaltet den Eingang eines Monitors (HDMI / DisplayPort / USB-C) per DDC/CI um. Kann auch zwischen zwei Eingängen wechseln."
+ },
+ "com.lysgarrt.decktoolkit.headset": {
+  "Name": "Akku",
+  "Tooltip": "Akkustand eines Bluetooth-Headsets, Controllers, einer Maus … (oder eines SteelSeries Arctis Nova Pro Wireless per USB)."
+ },
+ "com.lysgarrt.decktoolkit.volume": {
+  "Name": "Lautstärke",
+  "Tooltip": "Leiser / Lauter / Stumm für das Standard- oder ein bestimmtes Audiogerät. Zwei Tasten nebeneinander ergeben einen Regler."
+ },
+ "com.lysgarrt.decktoolkit.twitch": {
+  "Name": "Twitch-Kanal",
+  "Tooltip": "Zeigt, ob ein Twitch-Kanal live ist (grau = offline). Drücken öffnet den Stream."
+ },
+ "com.lysgarrt.decktoolkit.shutdown": {
+  "Name": "Sicher herunterfahren",
+  "Tooltip": "Fährt den PC erst herunter, wenn man innerhalb von 3 Sekunden ein zweites Mal drückt."
+ },
+ "com.lysgarrt.decktoolkit.bot": {
+  "Name": "SwitchBot Bot",
+  "Tooltip": "Lässt einen SwitchBot Bot direkt über das Bluetooth des PCs drücken (ohne Hub)."
+ }
+}

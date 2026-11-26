@@ -1,0 +1,29 @@
+{
+ "Name": "Deck Toolkit",
+ "Description": "Two-key volume slider with mute, Twitch live status, monitor input switching (DDC/CI), battery level of Bluetooth devices, SwitchBot Bot via Bluetooth and a safe shutdown key.",
+ "Category": "Deck Toolkit",
+ "com.lysgarrt.decktoolkit.switch": {
+  "Name": "Monitor Input",
+  "Tooltip": "Switches a monitor input (HDMI / DisplayPort / USB-C) via DDC/CI. Can also toggle between two inputs."
+ },
+ "com.lysgarrt.decktoolkit.headset": {
+  "Name": "Battery",
+  "Tooltip": "Battery level of a Bluetooth headset, controller, mouse … (or a SteelSeries Arctis Nova Pro Wireless via USB)."
+ },
+ "com.lysgarrt.decktoolkit.volume": {
+  "Name": "Volume",
+  "Tooltip": "Volume down / up / mute for the default or any audio device. Two keys side by side form one slider."
+ },
+ "com.lysgarrt.decktoolkit.twitch": {
+  "Name": "Twitch Channel",
+  "Tooltip": "Shows whether a Twitch channel is live (grey = offline). Press opens the stream."
+ },
+ "com.lysgarrt.decktoolkit.shutdown": {
+  "Name": "Safe Shutdown",
+  "Tooltip": "Shuts the PC down only after a second press within 3 seconds."
+ },
+ "com.lysgarrt.decktoolkit.bot": {
+  "Name": "SwitchBot Bot",
+  "Tooltip": "Presses a SwitchBot Bot directly via the PC's Bluetooth (no hub needed)."
+ }
+}

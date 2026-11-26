@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="pi.css">
+<script src="pi.js"></script>
+</head>
+<body>
+  <div class="row">
+    <label for="bot">Bot</label>
+    <select id="bot"><option value="" data-i18n="scanFirst">– scan first –</option></select>
+    <button id="scan" data-i18n="scan">Scan</button>
+  </div>
+  <div class="hint" id="status" data-i18n="scanHint">Scans for 10 seconds using the PC's Bluetooth. The closest bot is listed first.</div>
+  <div class="row">
+    <label for="name" data-i18n="name">Name</label>
+    <input id="name" type="text" placeholder="e.g. HDMI switch" data-i18n-ph="namePh">
+  </div>
+  <div class="row">
+    <label for="times" data-i18n="times">Press</label>
+    <select id="times">
+      <option value="1">1×</option>
+      <option value="2">2×</option>
+      <option value="3">3×</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="display" data-i18n="display">Icon</label>
+    <select id="display">
+      <option value="finger" data-i18n="finger">Finger</option>
+      <option value="light" data-i18n="lightOpt">Light on / off</option>
+      <option value="output" data-i18n="output">Monitor / TV (two-way switch)</option>
+    </select>
+  </div>
+  <div class="row" id="outputRow">
+    <label for="output" data-i18n="active">Currently</label>
+    <select id="output">
+      <option value="monitor" data-i18n="monitor">Monitor</option>
+      <option value="tv" data-i18n="tv">TV</option>
+    </select>
+    <select id="light">
+      <option value="on" data-i18n="on">on</option>
+      <option value="off" data-i18n="offOpt">off</option>
+    </select>
+  </div>
+  <div class="hint" id="outputHint" data-i18n="outputHint">Every press flips the icon (e.g. a bot on a light switch or on the button of an HDMI switch). If it gets out of sync, correct it here.</div>
+  <div class="hint" data-i18n="which">Which bot is which? Press the key and watch which arm moves.</div>
+<script>
+  window.STRINGS = { de: {
+    scanFirst: "– erst suchen –", scan: "Suchen", chooseBot: "– Bot wählen –",
+    scanHint: "Sucht 10 Sekunden über das Bluetooth des PCs. Der nächste Bot steht oben.",
+    scanning: "Suche läuft (10 Sekunden)…", error: "Fehler", noBt: "Bluetooth nicht verfügbar",
+    found: "Bot(s) gefunden.", none: "Kein Bot gefunden. Batteriestreifen gezogen? Bot näher an den PC?",
+    battery: "Akku", near: "nah", mid: "mittel", far: "weit",
+    name: "Name", namePh: "z. B. HDMI-Schalter", times: "Drücken", display: "Symbol", finger: "Finger",
+    output: "Monitor / Fernseher (Umschalter)", lightOpt: "Licht an / aus", on: "an", offOpt: "aus", active: "Gerade aktiv", monitor: "Monitor", tv: "Fernseher",
+    outputHint: "Jeder Druck wechselt das Symbol (z.&nbsp;B. Bot am Lichtschalter oder an der Taste eines HDMI-Umschalters). Stimmt es nicht mehr, hier korrigieren.",
+    which: "Welcher Bot welcher ist: Taste drücken und schauen, welcher Arm ausfährt.",
+  } };
+  const $ = (id) => document.getElementById(id);
+  function save() {
+    const s = PI.settings;
+    s.mac = $("bot").value;
+    s.name = $("name").value.trim();
+    s.times = Number($("times").value);
+    s.display = $("display").value;
+    s.output = $("output").value;
+    s.light = $("light").value;
+    toggleOutput();
+    PI.save();
+  }
+  function ensureOption(mac, text) {
+    if (!mac) return;
+    let o = [...$("bot").options].find((x) => x.value === mac);
+    if (!o) { o = document.createElement("option"); o.value = mac; $("bot").appendChild(o); }
+    o.textContent = text;
+  }
+  function apply(s) {
+    ensureOption(s.mac, (s.name ? s.name + " · " : "") + s.mac);
+    $("bot").value = s.mac || "";
+    $("name").value = s.name || "";
+    $("times").value = String(s.times || 1);
+    $("display").value = s.display || "finger";
+    $("output").value = s.output || "monitor";
+    $("light").value = s.light || "off";
+    toggleOutput();
+  }
+  function toggleOutput() {
+    const mode = $("display").value, on = mode !== "finger";
+    $("outputRow").style.display = on ? "" : "none";
+    $("output").style.display = mode === "output" ? "" : "none";
+    $("light").style.display = mode === "light" ? "" : "none";
+    $("outputHint").style.display = on ? "" : "none";
+  }
+  function onMessage(p) {
+    if (p.event !== "bots") return;
+    $("scan").disabled = false;
+    if (!p.ok) { $("status").textContent = PI.t("error", "Error") + ": " + (p.error || PI.t("noBt", "Bluetooth not available")); return; }
+    const bots = (p.devices || []).filter((d) => d.type === "H");
+    const sel = $("bot");
+    sel.innerHTML = "";
+    sel.add(new Option(PI.t("chooseBot", "– choose bot –"), ""));
+    bots.forEach((d, i) => {
+      const signal = d.rssi > -65 ? PI.t("near", "near") : d.rssi > -80 ? PI.t("mid", "medium") : PI.t("far", "far");
+      ensureOption(d.mac, `Bot ${i + 1} · ${d.mac} · ${PI.t("battery", "Battery")} ${d.battery}% · ${signal}`);
+    });
+    const s = PI.settings;
+    if (s.mac) ensureOption(s.mac, ([...sel.options].find((o) => o.value === s.mac)?.textContent) || s.mac);
+    sel.value = s.mac || "";
+    $("status").textContent = bots.length ? `${bots.length} ${PI.t("found", "bot(s) found.")}` : PI.t("none", "No bot found. Battery strip pulled? Bot closer to the PC?");
+  }
+  PI.connect({ onSettings: apply, onMessage });
+  $("scan").addEventListener("click", () => {
+    $("scan").disabled = true;
+    $("status").textContent = PI.t("scanning", "Scanning (10 seconds)…");
+    PI.sendToPlugin({ event: "scan" });
+  });
+  for (const id of ["bot", "name", "times", "display", "output", "light"]) $(id).addEventListener("change", save);
+</script>
+</body>
+</html>

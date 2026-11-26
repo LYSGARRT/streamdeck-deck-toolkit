@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="pi.css">
+<script src="pi.js"></script>
+</head>
+<body>
+  <div class="row">
+    <label for="channel" data-i18n="channel">Channel</label>
+    <input id="channel" type="text" spellcheck="false" placeholder="e.g. shroud or twitch.tv/shroud" data-i18n-ph="channelPh">
+  </div>
+  <div class="hint" data-i18n="hint">Grey = offline, colour with LIVE badge = streaming. Checked every minute via the public channel page (no login needed).</div>
+  <div class="row">
+    <label for="home" data-i18n="after">After press</label>
+    <select id="home">
+      <option value="false" data-i18n="stay">stay on this page</option>
+      <option value="true" data-i18n="home">jump to home screen</option>
+    </select>
+  </div>
+  <div class="hint" data-i18n="homeHint">“Jump to home screen” needs a one-time setup of your Stream Deck profile – see the README on GitHub.</div>
+<script>
+  window.STRINGS = { de: {
+    channel: "Kanal", channelPh: "z. B. shroud oder twitch.tv/shroud",
+    hint: "Grau = offline, farbig mit LIVE = sendet gerade. Wird jede Minute über die öffentliche Kanalseite geprüft (kein Login nötig).",
+    after: "Danach", stay: "auf dieser Seite bleiben", home: "zum Homescreen springen",
+    homeHint: "„Zum Homescreen springen“ braucht eine einmalige Einrichtung deines Stream-Deck-Profils – siehe README auf GitHub.",
+  } };
+  const $ = (id) => document.getElementById(id);
+  function save() {
+    PI.settings.channel = $("channel").value.trim();
+    PI.settings.home = $("home").value === "true";
+    PI.save();
+  }
+  PI.connect({ onSettings(s) {
+    $("channel").value = s.channel || "";
+    $("home").value = String(s.home === true);
+  } });
+  $("channel").addEventListener("change", save);
+  $("home").addEventListener("change", save);
+</script>
+</body>
+</html>

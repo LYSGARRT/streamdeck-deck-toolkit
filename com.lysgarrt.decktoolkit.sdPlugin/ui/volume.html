@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="pi.css">
+<script src="pi.js"></script>
+</head>
+<body>
+  <div class="row">
+    <label for="target" data-i18n="device">Device</label>
+    <select id="target">
+      <option value="out" data-i18n="defOut">Default output (follows Windows)</option>
+      <option value="in" data-i18n="defIn">Default input (follows Windows)</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="mode" data-i18n="key">Key</label>
+    <select id="mode">
+      <option value="down" data-i18n="down">Volume down</option>
+      <option value="up" data-i18n="up">Volume up</option>
+      <option value="mute" data-i18n="mute">Mute on/off</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="step" data-i18n="step">Step</label>
+    <select id="step">
+      <option value="1">1 %</option>
+      <option value="2">2 %</option>
+      <option value="5">5 %</option>
+      <option value="10">10 %</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="icon" data-i18n="icon">Icon</label>
+    <select id="icon">
+      <option value="auto" data-i18n="auto">automatic</option>
+      <option value="speaker" data-i18n="speaker">Speaker</option>
+      <option value="headphones" data-i18n="headphones">Headphones</option>
+      <option value="mic" data-i18n="mic">Microphone</option>
+      <option value="gamepad" data-i18n="gamepad">Console</option>
+    </select>
+  </div>
+  <div class="row">
+    <label for="label" data-i18n="label">Label</label>
+    <input id="label" type="text" maxlength="9" placeholder="automatic (device name)" data-i18n-ph="labelPh">
+  </div>
+  <div class="hint" data-i18n="hint">Tip: put “Volume down” and “Volume up” of the same device next to each other – together they form one wide slider. Hold to keep changing. Volume up also unmutes.</div>
+<script>
+  window.STRINGS = { de: {
+    device: "Gerät", defOut: "Standard-Ausgabe (folgt Windows)", defIn: "Standard-Eingabe (folgt Windows)",
+    key: "Taste", down: "Leiser", up: "Lauter", mute: "Stumm an/aus", step: "Schritt",
+    icon: "Symbol", auto: "automatisch", speaker: "Lautsprecher", headphones: "Kopfhörer", mic: "Mikrofon", gamepad: "Konsole",
+    label: "Beschriftung", labelPh: "automatisch (Gerätename)", out: "Ausgabe", in: "Eingabe", missing: "(nicht verbunden)",
+    hint: "Tipp: „Leiser“ und „Lauter“ desselben Geräts nebeneinander legen – zusammen ergeben sie einen breiten Regler. Gedrückt halten = weiter verstellen. Lauter hebt Stumm auf.",
+  } };
+  let devices = [];
+  const $ = (id) => document.getElementById(id);
+  const fields = ["target", "mode", "step", "icon", "label"];
+  function save() {
+    for (const f of fields) PI.settings[f] = $(f).value;
+    PI.save();
+  }
+  function fillDevices() {
+    const sel = $("target");
+    while (sel.options.length > 2) sel.remove(2);
+    const ids = new Set();
+    for (const d of devices) {
+      ids.add(d.id);
+      sel.add(new Option((d.flow === "out" ? PI.t("out", "Output") : PI.t("in", "Input")) + ": " + d.name, d.id));
+    }
+    const t = PI.settings.target;
+    if (t && !["out", "in"].includes(t) && !ids.has(t)) sel.add(new Option(PI.t("missing", "(not connected)") + " " + t, t));
+  }
+  function apply(s) {
+    fillDevices();
+    $("target").value = s.target || "out";
+    $("mode").value = s.mode || "up";
+    $("step").value = String(s.step || 5);
+    $("icon").value = s.icon || "auto";
+    $("label").value = s.label || "";
+  }
+  PI.connect({
+    onSettings: apply,
+    onOpen() { PI.sendToPlugin({ event: "getDevices" }); },
+    onMessage(p) { if (p.event === "devices") { devices = p.list || []; apply(PI.settings); } },
+  });
+  for (const f of ["target", "mode", "step", "icon"]) $(f).addEventListener("change", save);
+  $("label").addEventListener("input", save);
+</script>
+</body>
+</html>
